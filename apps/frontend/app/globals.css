@@ -1,0 +1,13 @@
+/* Minimal Mantine-like global CSS — tiny and fast
+   Provides core tokens and a few basic components (btn, card, header).
+*/
+:root{--mantine-bg:#0b1220;--mantine-text:#e6eef8;--mantine-muted:#94a3b8;--mantine-primary:#60a5fa;--mantine-radius:8px;--mantine-gap:12px;--mantine-shadow:0 6px 18px rgba(2,6,23,0.6)}
+*{box-sizing:border-box}
+html,body,#__next{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.4;background:var(--mantine-bg);color:var(--mantine-text);-webkit-font-smoothing:antialiased}
+a{color:var(--mantine-primary);text-decoration:none}
+.btn,.mantine-Button{display:inline-block;padding:6px 10px;border-radius:6px;background:var(--mantine-primary);color:#041125;border:0;cursor:pointer}
+.card,.mantine-Card{background:rgba(255,255,255,0.03);border-radius:var(--mantine-radius);padding:var(--mantine-gap);box-shadow:var(--mantine-shadow)}
+.header{padding:8px 12px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)}
+.muted{color:var(--mantine-muted);font-size:.95rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
