@@ -1,7 +1,6 @@
 services:
   postgis:
     image: postgis/postgis:16-3.4
-    container_name: geo-postgis
     restart: unless-stopped
     env_file:
       - .env
@@ -17,24 +16,51 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: geo-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
 
   tegola:
     image: gospatial/tegola:v0.21.2
-    container_name: geo-tegola
     restart: unless-stopped
     depends_on:
       postgis:
         condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8080:8080"
     volumes:
       - ./tiles/tegola.toml:/etc/tegola/tegola.toml
     command: serve --config /etc/tegola/tegola.toml
 
-  
+  api:
+    build:
+      context: ../../apps/api
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      postgis:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      tegola:
+        condition: service_started
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ../../apps/frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
 volumes:
   postgis_data:

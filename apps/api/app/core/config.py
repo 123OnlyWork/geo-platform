@@ -1,7 +1,6 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -21,9 +20,13 @@ class Settings(BaseSettings):
 
     cors_origins: str = Field(
         default="http://localhost:3000,http://localhost:8080",
-        alias="CORS_ORIGINS"
+        alias="CORS_ORIGINS",
     )
-    tile_base_url: str = Field(default="http://localhost:8080", alias="TILE_BASE_URL")
+
+    tile_public_base_url: str = Field(
+        default="http://localhost:8080",
+        alias="TILE_PUBLIC_BASE_URL",
+    )
 
     @property
     def database_url(self) -> str:
@@ -35,6 +38,5 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
-
 
 settings = Settings()

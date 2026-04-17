@@ -5,17 +5,19 @@ import { api } from "@/services/api";
 import type { MapMetaResponse } from "@/types/map";
 
 const fallbackConfig: MapMetaResponse = {
-  tileUrl: "http://localhost:8080/maps/map/{z}/{x}/{y}.pbf",
+  tileUrl:
+    process.env.NEXT_PUBLIC_TILE_URL ??
+    "http://localhost:8080/maps/map/{z}/{x}/{y}.pbf",
   layers: [
     { key: "roads", label: "Roads", minZoom: 0, maxZoom: 22 },
     { key: "water", label: "Water", minZoom: 0, maxZoom: 22 },
     { key: "buildings", label: "Buildings", minZoom: 0, maxZoom: 22 },
-    { key: "places", label: "Places", minZoom: 0, maxZoom: 22 }
+    { key: "places", label: "Places", minZoom: 0, maxZoom: 22 },
   ],
   center: [55.751244, 37.618423],
   zoom: 10,
   minZoom: 0,
-  maxZoom: 22
+  maxZoom: 22,
 };
 
 export function useMapConfig() {

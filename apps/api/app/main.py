@@ -5,7 +5,10 @@ from app.core.config import settings
 from app.routers.health import router as health_router
 from app.routers.map_meta import router as map_meta_router
 
-app = FastAPI(title=settings.app_name)
+app = FastAPI(
+    title=settings.app_name,
+    version="0.1.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
