@@ -5,12 +5,14 @@ __pycache__/
 
 # Node
 node_modules/
-/.next/
+.next/
 pnpm-lock.yaml
 
 # Env
 .env
+*.env.local
 
 # Misc
 .DS_Store
 .vscode/
+apps/frontend/.git-frontend-backup/
