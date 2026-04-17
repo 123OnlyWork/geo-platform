@@ -1,11 +1,13 @@
-"use client";
+import dynamic from "next/dynamic";
 
-import MapView from "../../components/map/MapView";
+const MapView = dynamic(() => import("@/components/map/MapView"), {
+  ssr: false
+});
 
 export default function MapPage() {
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <main style={{ width: "100vw", height: "100vh" }}>
       <MapView />
-    </div>
+    </main>
   );
 }

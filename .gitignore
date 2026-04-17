@@ -1,18 +1,10 @@
-# Python
-__pycache__/
-.venv/
-*.pyc
-
-# Node
-node_modules/
-.next/
-pnpm-lock.yaml
-
-# Env
+node_modules
+.pnpm-store
+.next
+dist
+coverage
 .env
-*.env.local
-
-# Misc
-.DS_Store
-.vscode/
-apps/frontend/.git-frontend-backup/
+.env.local
+.env.*.local
+__pycache__
+*.pyc

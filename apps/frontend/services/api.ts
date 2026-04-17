@@ -1,26 +1,27 @@
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { clientConfig } from "@/lib/config";
 
-async function request(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json"
-    },
-    ...options
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
-  }
-
-  return res.json();
+interface RequestOptions extends RequestInit {
+  path: string;
 }
 
-export default {
-  get: (path: string) => request(path),
-  post: (path: string, body: any) =>
-    request(path, {
-      method: "POST",
-      body: JSON.stringify(body)
-    })
+async function request<T>({ path, ...options }: RequestOptions): Promise<T> {
+  const response = await fetch(`${clientConfig.apiBaseUrl}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {})
+    },
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`API error ${response.status}: ${body}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export const api = {
+  get: <T>(path: string) => request<T>({ path, method: "GET" })
 };

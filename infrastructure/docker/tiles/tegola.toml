@@ -1,101 +1,94 @@
+tile_buffer = 16
+
 [webserver]
 port = ":8080"
 
+[cache]
+type = "redis"
+uri = "redis://geo-redis:6379/0"
+max_zoom = 18
+
 [[providers]]
-name = "osm"
+name = "postgis"
 type = "postgis"
+uri = "postgres://postgres:Egor150101@host.docker.internal:5432/osm?sslmode=disable&pool_max_conns=10"
+srid = 3857
 
-[providers.connection]
-host = "postgres"
-port = 5432
-database = "geo_db"
-user = "geo_user"
-password = "geo_pass"
+  [[providers.layers]]
+  name = "roads"
+  geometry_fieldname = "geom"
+  id_fieldname = "osm_id"
+  geometry_type = "LineString"
+  sql = """
+    SELECT
+      osm_id,
+      ST_AsBinary(way) AS geom
+    FROM public.planet_osm_line
+    WHERE highway IS NOT NULL
+      AND way && !BBOX!
+  """
 
-# ---------------- ROADS ----------------
-[[providers.layers]]
-name = "roads"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, highway, way
-FROM planet_osm_line
-WHERE highway IS NOT NULL
-"""
+  [[providers.layers]]
+  name = "water"
+  geometry_fieldname = "geom"
+  id_fieldname = "osm_id"
+  geometry_type = "Polygon"
+  sql = """
+    SELECT
+      osm_id,
+      ST_AsBinary(way) AS geom
+    FROM public.planet_osm_polygon
+    WHERE water IS NOT NULL
+      AND way && !BBOX!
+  """
 
-# ---------------- RAILWAYS ----------------
-[[providers.layers]]
-name = "railways"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, railway, way
-FROM planet_osm_line
-WHERE railway IS NOT NULL
-"""
+  [[providers.layers]]
+  name = "buildings"
+  geometry_fieldname = "geom"
+  id_fieldname = "osm_id"
+  geometry_type = "Polygon"
+  sql = """
+    SELECT
+      osm_id,
+      ST_AsBinary(way) AS geom
+    FROM public.planet_osm_polygon
+    WHERE building IS NOT NULL
+      AND way && !BBOX!
+  """
 
-# ---------------- WATER ----------------
-[[providers.layers]]
-name = "water"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, waterway, way
-FROM planet_osm_line
-WHERE waterway IS NOT NULL
-"""
+  [[providers.layers]]
+  name = "places"
+  geometry_fieldname = "geom"
+  id_fieldname = "osm_id"
+  geometry_type = "Point"
+  sql = """
+    SELECT
+      osm_id,
+      ST_AsBinary(way) AS geom
+    FROM public.planet_osm_point
+    WHERE place IS NOT NULL
+      AND way && !BBOX!
+  """
 
-# ---------------- LANDUSE ----------------
-[[providers.layers]]
-name = "landuse"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, landuse, way
-FROM planet_osm_polygon
-WHERE landuse IS NOT NULL
-"""
-
-# ---------------- BUILDINGS ----------------
-[[providers.layers]]
-name = "buildings"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, building, way
-FROM planet_osm_polygon
-WHERE building IS NOT NULL
-"""
-
-# ---------------- PLACES ----------------
-[[providers.layers]]
-name = "places"
-geometry_fieldname = "way"
-id_fieldname = "osm_id"
-sql = """
-SELECT osm_id, name, place, way
-FROM planet_osm_point
-WHERE place IS NOT NULL
-"""
-
-# ---------------- MAP ----------------
 [[maps]]
 name = "map"
 
-[[maps.layers]]
-provider_layer = "osm.landuse"
+  [[maps.layers]]
+  provider_layer = "postgis.roads"
+  min_zoom = 8
+  max_zoom = 22
 
-[[maps.layers]]
-provider_layer = "osm.water"
+  [[maps.layers]]
+  provider_layer = "postgis.water"
+  min_zoom = 5
+  max_zoom = 22
 
-[[maps.layers]]
-provider_layer = "osm.railways"
+  [[maps.layers]]
+  provider_layer = "postgis.buildings"
+  min_zoom = 14
+  max_zoom = 22
 
-[[maps.layers]]
-provider_layer = "osm.roads"
-
-[[maps.layers]]
-provider_layer = "osm.buildings"
-
-[[maps.layers]]
-provider_layer = "osm.places"
+  [[maps.layers]]
+  provider_layer = "postgis.places"
+  min_zoom = 10
+  max_zoom = 22

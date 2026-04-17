@@ -1,28 +1,19 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.tiles.router import router as tiles_router
 
-# Optional Prometheus scraping endpoint
-try:
-    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-    PROMETHEUS_ENABLED = True
-except Exception:
-    PROMETHEUS_ENABLED = False
+from app.core.config import settings
+from app.routers.health import router as health_router
+from app.routers.map_meta import router as map_meta_router
 
-app = FastAPI()
+app = FastAPI(title=settings.app_name)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-@app.get("/metrics")
-def metrics():
-    if PROMETHEUS_ENABLED:
-        return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
-    return Response(content=b"", media_type="text/plain")
-
-app.include_router(tiles_router)
+app.include_router(health_router)
+app.include_router(map_meta_router)
