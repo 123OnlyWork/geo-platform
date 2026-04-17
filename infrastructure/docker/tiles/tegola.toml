@@ -1,0 +1,101 @@
+[webserver]
+port = ":8080"
+
+[[providers]]
+name = "osm"
+type = "postgis"
+
+[providers.connection]
+host = "postgres"
+port = 5432
+database = "geo_db"
+user = "geo_user"
+password = "geo_pass"
+
+# ---------------- ROADS ----------------
+[[providers.layers]]
+name = "roads"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, highway, way
+FROM planet_osm_line
+WHERE highway IS NOT NULL
+"""
+
+# ---------------- RAILWAYS ----------------
+[[providers.layers]]
+name = "railways"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, railway, way
+FROM planet_osm_line
+WHERE railway IS NOT NULL
+"""
+
+# ---------------- WATER ----------------
+[[providers.layers]]
+name = "water"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, waterway, way
+FROM planet_osm_line
+WHERE waterway IS NOT NULL
+"""
+
+# ---------------- LANDUSE ----------------
+[[providers.layers]]
+name = "landuse"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, landuse, way
+FROM planet_osm_polygon
+WHERE landuse IS NOT NULL
+"""
+
+# ---------------- BUILDINGS ----------------
+[[providers.layers]]
+name = "buildings"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, building, way
+FROM planet_osm_polygon
+WHERE building IS NOT NULL
+"""
+
+# ---------------- PLACES ----------------
+[[providers.layers]]
+name = "places"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+SELECT osm_id, name, place, way
+FROM planet_osm_point
+WHERE place IS NOT NULL
+"""
+
+# ---------------- MAP ----------------
+[[maps]]
+name = "map"
+
+[[maps.layers]]
+provider_layer = "osm.landuse"
+
+[[maps.layers]]
+provider_layer = "osm.water"
+
+[[maps.layers]]
+provider_layer = "osm.railways"
+
+[[maps.layers]]
+provider_layer = "osm.roads"
+
+[[maps.layers]]
+provider_layer = "osm.buildings"
+
+[[maps.layers]]
+provider_layer = "osm.places"

@@ -1,0 +1,63 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: geo-postgres
+    env_file:
+      - .env.docker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: geo-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../../apps/api
+    container_name: geo-api
+    env_file:
+      - .env.docker
+    ports:
+      - "8000:8000"
+    environment:
+      - TILE_SOURCE=tegola         # или 'fastapi' для генерации в API
+      - TEGOLA_URL=http://tileserver:8080
+    depends_on:
+      - postgres
+      - redis
+      - tileserver
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../../apps/frontend
+    container_name: geo-frontend
+    env_file:
+      - .env.docker
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  tileserver:
+    image: tegola/tegola:latest
+    container_name: geo-tegola
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../infrastructure/docker/tiles/tegola.toml:/etc/tegola/tegola.toml:ro
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  volumes:
+    postgres_data:
