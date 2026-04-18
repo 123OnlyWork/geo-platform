@@ -5,7 +5,6 @@
 - Next.js (frontend)
 - FastAPI (backend)
 - PostGIS (геоданные)
-- Tegola (vector tiles)
 - Redis (кеш)
 
 Проект реализован как монорепозиторий.
@@ -23,7 +22,7 @@ geo-platform/
 │ ├── map-core/ # стили/конфиг карты (будущий shared слой)
 │ └── api-client/ # клиент для API (заготовка)
 ├── infrastructure/
-│ └── docker/ # docker-compose, tegola config
+│ └── docker/ # docker-compose
 ├── README.md
 └── INSTALL.md
 
@@ -33,7 +32,6 @@ geo-platform/
 ## Как работает карта
 
 1. Frontend (Leaflet) отображает карту
-2. Тайлы запрашиваются из Tegola:
 
 /maps/map/{z}/{x}/{y}.pbf
 
@@ -85,7 +83,5 @@ Backend
 FastAPI
 SQLAlchemy
 Pydantic
-Гео
 PostGIS
-Tegola
 OpenStreetMap
