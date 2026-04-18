@@ -1,161 +1,121 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet.vectorgrid";
-import { useMapConfig } from "@/hooks/useMapConfig";
-
-type VectorGridLeaflet = typeof L & {
-  vectorGrid?: {
-    protobuf: (
-      url: string,
-      options: {
-        interactive?: boolean;
-        vectorTileLayerStyles?: Record<string, any>;
-      }
-    ) => L.Layer;
-  };
-};
+import { useEffect, useRef } from "react";
+import maplibregl from "maplibre-gl";
+import { Protocol } from "pmtiles";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 export default function MapView() {
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const vectorLayerRef = useRef<L.Layer | null>(null);
-
-  const { config, loading, error, tileLayerEnabled, setTileLayerEnabled } = useMapConfig();
-  const [tileError, setTileError] = useState<string | null>(null);
 
   useEffect(() => {
+    const protocol = new Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
     if (!containerRef.current || mapRef.current) return;
 
-    const map = L.map(containerRef.current, {
-      center: config.center,
-      zoom: config.zoom,
-      minZoom: config.minZoom,
-      maxZoom: config.maxZoom,
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      center: [37.618423, 55.751244],
+      zoom: 4,
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
+          osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap contributors",
+          },
+          places: {
+            type: "vector",
+            url: "pmtiles:///pmtiles/places.pmtiles",
+          },
+          roads: {
+            type: "vector",
+            url: "pmtiles:///pmtiles/roads.pmtiles",
+          },
+          railways: {
+            type: "vector",
+            url: "pmtiles:///pmtiles/railways.pmtiles",
+          },
+        },
+        layers: [
+          {
+            id: "osm",
+            type: "raster",
+            source: "osm",
+          },
+          {
+            id: "roads-line",
+            type: "line",
+            source: "roads",
+            "source-layer": "roads",
+            paint: {
+              "line-color": "#666",
+              "line-width": 1,
+            },
+          },
+          {
+            id: "railways-line",
+            type: "line",
+            source: "railways",
+            "source-layer": "railways",
+            paint: {
+              "line-color": "#222",
+              "line-width": 1,
+              "line-dasharray": [2, 2],
+            },
+          },
+          {
+            id: "places-circle",
+            type: "circle",
+            source: "places",
+            "source-layer": "places",
+            paint: {
+              "circle-radius": [
+                "match",
+                ["get", "place"],
+                "city", 6,
+                "town", 5,
+                "village", 4,
+                3
+              ],
+              "circle-color": "#d33",
+              "circle-stroke-color": "#fff",
+              "circle-stroke-width": 1
+            },
+          },
+          {
+            id: "places-label",
+            type: "symbol",
+            source: "places",
+            "source-layer": "places",
+            layout: {
+              "text-field": ["coalesce", ["get", "name"], ""],
+              "text-size": 12,
+              "text-offset": [0, 1.2],
+            },
+            paint: {
+              "text-color": "#222",
+              "text-halo-color": "#fff",
+              "text-halo-width": 1,
+            },
+          },
+        ],
+      },
     });
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
 
     mapRef.current = map;
 
     return () => {
-      if (vectorLayerRef.current) {
-        vectorLayerRef.current.remove();
-        vectorLayerRef.current = null;
-      }
       map.remove();
       mapRef.current = null;
+      maplibregl.removeProtocol("pmtiles");
     };
   }, []);
 
-  useEffect(() => {
-    if (!mapRef.current) return;
-    mapRef.current.setView(config.center, config.zoom);
-  }, [config.center, config.zoom]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    if (vectorLayerRef.current) {
-      vectorLayerRef.current.remove();
-      vectorLayerRef.current = null;
-    }
-
-    setTileError(null);
-
-    if (!tileLayerEnabled) return;
-
-    const vectorLeaflet = L as VectorGridLeaflet;
-    if (!vectorLeaflet.vectorGrid?.protobuf) {
-      setTileError("leaflet.vectorgrid is not available");
-      return;
-    }
-
-    try {
-      const vectorLayer = vectorLeaflet.vectorGrid.protobuf(config.tileUrl, {
-        interactive: true,
-        vectorTileLayerStyles: {
-          roads: {
-            weight: 1.5,
-            opacity: 0.9,
-          },
-          water: {
-            weight: 1,
-            opacity: 0.8,
-            fill: true,
-            fillOpacity: 0.5,
-          },
-          buildings: {
-            weight: 1,
-            opacity: 0.7,
-            fill: true,
-            fillOpacity: 0.35,
-          },
-          places: {
-            radius: 4,
-            opacity: 1,
-            fill: true,
-            fillOpacity: 0.8,
-          },
-        },
-      });
-
-      vectorLayer.addTo(map);
-      vectorLayerRef.current = vectorLayer;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load vector tiles";
-      setTileError(message);
-      setTileLayerEnabled(false);
-    }
-  }, [config, tileLayerEnabled, setTileLayerEnabled]);
-
-  return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      <div
-        ref={containerRef}
-        style={{ width: "100%", height: "100%" }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          zIndex: 1000,
-          background: "#fff",
-          padding: 12,
-          borderRadius: 8,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
-          minWidth: 280,
-        }}
-      >
-        <div><strong>Map status</strong></div>
-        <div>API config: {loading ? "loading..." : "loaded"}</div>
-        <div>Vector layer: {tileLayerEnabled ? "enabled" : "disabled"}</div>
-        <div style={{ wordBreak: "break-all" }}>Tile URL: {config.tileUrl}</div>
-
-        {error && <div style={{ color: "crimson" }}>Backend config error: {error}</div>}
-        {tileError && <div style={{ color: "crimson" }}>Vector tile error: {tileError}</div>}
-
-        <button
-          onClick={() => setTileLayerEnabled((prev) => !prev)}
-          style={{
-            marginTop: 10,
-            border: "1px solid #d1d5db",
-            background: "#f9fafb",
-            padding: "8px 10px",
-            borderRadius: 6,
-            cursor: "pointer",
-          }}
-        >
-          {tileLayerEnabled ? "Disable vector tiles" : "Enable vector tiles"}
-        </button>
-      </div>
-    </div>
-  );
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

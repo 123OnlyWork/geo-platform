@@ -8,3 +8,6 @@ coverage
 .env.*.local
 __pycache__
 *.pyc
+apps/frontend/public/pmtiles_src/roads.geojson
+apps/frontend/public/pmtiles_src/railways.geojson
+apps/frontend/public/pmtiles_src/places.geojson

@@ -2,15 +2,12 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main style={{ padding: 32 }}>
+    <main style={{ padding: 24, fontFamily: "sans-serif" }}>
       <h1>Geo Platform</h1>
-      <p>Базовый frontend-каркас геоплатформы.</p>
+      <p>Базовая версия геоплатформы.</p>
 
-      <div style={{ display: "flex", gap: 12 }}>
+      <div style={{ marginTop: 16 }}>
         <Link href="/map">Открыть карту</Link>
-        <a href="http://localhost:8000/health" target="_blank" rel="noreferrer">
-          API health
-        </a>
       </div>
     </main>
   );

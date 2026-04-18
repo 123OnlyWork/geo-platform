@@ -1,9 +1,10 @@
 import "./globals.css";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Geo Platform",
-  description: "Geospatial platform frontend"
+  description: "Geo platform map",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
