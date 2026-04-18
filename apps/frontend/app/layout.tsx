@@ -1,13 +1,18 @@
+// apps/frontend/app/layout.tsx
 import "./globals.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Geo Platform",
-  description: "Geo platform map",
+  description: "MapLibre + PMTiles"
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ru">
       <body>{children}</body>

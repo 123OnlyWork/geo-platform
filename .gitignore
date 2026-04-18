@@ -1,13 +1,10 @@
 node_modules
-.pnpm-store
 .next
 dist
 coverage
-.env
-.env.local
-.env.*.local
-__pycache__
-*.pyc
+*.log
+apps/frontend/public/pmtiles/*.pmtiles
 apps/frontend/public/pmtiles_src/roads.geojson
-apps/frontend/public/pmtiles_src/railways.geojson
 apps/frontend/public/pmtiles_src/places.geojson
+apps/frontend/public/pmtiles_src/railways.geojson
+apps/frontend/public/pmtiles_src/roads_between_cities.geojson

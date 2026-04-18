@@ -1,14 +1,8 @@
-import Link from "next/link";
+// apps/frontend/app/page.tsx
+"use client";
 
-export default function HomePage() {
-  return (
-    <main style={{ padding: 24, fontFamily: "sans-serif" }}>
-      <h1>Geo Platform</h1>
-      <p>Базовая версия геоплатформы.</p>
+import MapView from "../components/MapView";
 
-      <div style={{ marginTop: 16 }}>
-        <Link href="/map">Открыть карту</Link>
-      </div>
-    </main>
-  );
+export default function Page() {
+  return <MapView />;
 }
